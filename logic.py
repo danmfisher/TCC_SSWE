@@ -1,31 +1,31 @@
 import numpy as np
 import math
-import pandas as pd
 from scipy.stats import multivariate_normal
 
-def sampleSim(x0, long0, lat0, long1, lat1, sigma2, rho, m_realiz):
-# This function that simulates m realizations 
-# from a conditional probability distribution 
-# INPUT
-# 		x0 			the observations, 
-# 		long0 		the location of the observations, 
-# 		lat0 		the location of the observations, 
-# 		long1 		the locations we want to predict,  
-# 		lat1 		the locations we want to predict, 
-# 		σ2 			the parameter sigma squared
-#		ρ 			the parameter rho the values of the parameters
-# 		m_realiz	the number of realizations of the sim to compute
-#
-# OUTPUT 
-# 		realize_array 	The output should be in the form of a m×n1 array
+def sample_sim(x0=None, long0=None, lat0=None, long1=None, lat1=None, sigma2=1, rho=10, m_realiz=1):
+	"""
+	This function that simulates m realizations 
+	from a conditional probability distribution 
+	INPUT
+			x0 			the observations, 
+			long0 		the longitude location of the observations 
+			lat0 		the latitude location of the observations 
+			long1 		the longitude locations we want to predict
+			lat1 		the latitude locations we want to predict 
+			sigma2 		the parameter sigma squared
+			rho			the parameter rho the values of the parameters
+			m_realiz	the number of realizations of the sim to compute
+	OUTPUT 
+			realize_array 	The output should be in the form of a m×n1 array
+	"""
 	N = len(x0)
 	M = len(lat1)
 	mu_0 = np.zeros(N)
 	mu_1 = np.zeros(M)
 
-	Sigma_00 = genSquareCovMatrix(long0, lat0, sigma2, rho)
-	Sigma_11 = genSquareCovMatrix(long1, lat1, sigma2, rho)
-	Sigma_01 = genMNCovMatrix(long0, lat0, long1, lat1, sigma2, rho)
+	Sigma_00 = gen_square_cov(long0, lat0, sigma2, rho)
+	Sigma_11 = gen_square_cov(long1, lat1, sigma2, rho)
+	Sigma_01 = gen_mn_cov(long0, lat0, long1, lat1, sigma2, rho)
 	Sigma_10 = Sigma_01.transpose()
 
 	mu_cond = mu_1 + np.dot(Sigma_10, x0 - mu_0)
@@ -34,19 +34,20 @@ def sampleSim(x0, long0, lat0, long1, lat1, sigma2, rho, m_realiz):
 
 	return realize_array
 
-def genSquareCovMatrix(lon_DEG, lat_DEG, sigma, rho):
-	# function assumes covariance fuction is of the form from the pdf:
-	# 		[SIGMA_00]ij = sigma^2 * exp(-d0ij / rho)
-	# INPUTS
-	# 	lon_DEG		array* of longitude data in degrees
-	# 	lat_DEG 	array* of latitude data in degrees
-	# 	sigma 	 	parameter
-	# 	rho 		parameter
-	# *arrays of lat/lon must be the same length.
-	#
-	# OUTPUTS
-	# 	cov_matrx 	a symmetric NxN covariance matrix where N is the length of the lat/lon array
-
+def gen_square_cov(lon_DEG=None, lat_DEG=None, sigma=1, rho=10):
+	"""
+	function assumes covariance fuction is of the form from the pdf:
+			[SIGMA_00]ij = sigma^2 * exp(-d0ij / rho)
+	INPUTS
+		lon_DEG		array* of longitude data in degrees
+		lat_DEG 	array* of latitude data in degrees
+		sigma 	 	parameter
+		rho 		parameter
+	*arrays of lat/lon must be the same length.
+	
+	OUTPUTS
+		cov_matrx 	a symmetric NxN covariance matrix where N is the length of the lat/lon array
+	"""
 	N = len(lat_DEG)
 	cov_matrx = np.zeros((N,N))
 
@@ -59,7 +60,7 @@ def genSquareCovMatrix(lon_DEG, lat_DEG, sigma, rho):
 	return cov_matrx
 
 
-def genMNCovMatrix(lon1_DEG, lat1_DEG, lon2_DEG, lat2_DEG, sigma, rho):
+def gen_mn_cov(lon1_DEG=None, lat1_DEG=None, lon2_DEG=None, lat2_DEG=None, sigma=1, rho=10):
 	N = len(lon1_DEG)
 	M = len(lon2_DEG)
 	cov_matrx = np.zeros((N,M))
@@ -73,7 +74,7 @@ def genMNCovMatrix(lon1_DEG, lat1_DEG, lon2_DEG, lat2_DEG, sigma, rho):
 	return cov_matrx
 
 
-def haversine(lon1_DEG, lat1_DEG, lon2_DEG, lat2_DEG):
+def haversine(lon1_DEG=None, lat1_DEG=None, lon2_DEG=None, lat2_DEG=None):
     """
     Calculate the great circle distance between two points 
     on the earth (specified in decimal degrees)
